@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Evaluación de Ansiedad Precompetitiva</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #1e3c72;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .resultado {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ecf0f1;
+            border-radius: 6px;
+        }
+
+        .bajo { color: green; }
+        .medio { color: orange; }
+        .alto { color: red; }
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Evaluación de Ansiedad Precompetitiva</h1>
+
+<p>
+Esta herramienta utiliza inteligencia artificial para estimar el nivel de ansiedad en jugadores antes de competir.
+El modelo fue entrenado mediante Machine Learning (Random Forest) para detectar patrones psicológicos relacionados con la ansiedad competitiva.
+</p>
+
+<h3>¿Cómo responder?</h3>
+
+<p>Responde cada pregunta con un número del <b>1 al 5</b>:</p>
+
+<ul>
+<li>1 = Muy bajo</li>
+<li>2 = Bajo</li>
+<li>3 = Moderado</li>
+<li>4 = Alto</li>
+<li>5 = Muy alto</li>
+</ul>
+
+<p>
+🔹 Responde con sinceridad<br>
+🔹 No dejes campos vacíos<br>
+🔹 Esto es una herramienta de apoyo, no un diagnóstico clínico
+</p>
+
+<form action="/predict" method="post">
+
+    <label>¿Te sientes nervioso antes del partido?</label>
+    <input type="number" name="q1" min="1" max="5" required>
+
+    <label>¿Confías en tu rendimiento?</label>
+    <input type="number" name="q2" min="1" max="5" required>
+
+    <label>¿Sientes presión antes de competir?</label>
+    <input type="number" name="q3" min="1" max="5" required>
+
+    <button type="submit">Evaluar Ansiedad</button>
+
+</form>
+
+{% if resultado %}
+<div class="resultado">
+
+    <h3>Resultado</h3>
+
+    <p><b>Probabilidad de ansiedad:</b> {{resultado}} %</p>
+
+    <p>
+        <b>Nivel:</b>
+        {% if "BAJO" in nivel %}
+            <span class="bajo">{{nivel}}</span>
+        {% elif "MEDIO" in nivel %}
+            <span class="medio">{{nivel}}</span>
+        {% else %}
+            <span class="alto">{{nivel}}</span>
+        {% endif %}
+    </p>
+
+    <p>
+    Este resultado es una estimación basada en inteligencia artificial.
+    Puede ayudar a identificar niveles de ansiedad y apoyar la toma de decisiones en el entrenamiento deportivo.
+    </p>
+
+</div>
+{% endif %}
+
+</div>
+
+</body>
+</html>
