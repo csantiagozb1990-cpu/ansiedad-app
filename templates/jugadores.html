@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Jugadores</title>
+</head>
+
+<body>
+
+<h2>Historial de Jugadores</h2>
+
+<table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Ansiedad</th>
+    </tr>
+
+    {% for jugador in datos %}
+    <tr>
+        <td>{{jugador[0]}}</td>
+        <td>{{jugador[1]}}</td>
+        <td>{{jugador[2]}}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
