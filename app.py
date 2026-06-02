@@ -80,7 +80,7 @@ def obtener_recomendacion(porcentaje):
 @app.route("/")
 def home():
     inicializar_db()
-    return render_template("index.html")
+    return render_template("index.html", resultado=None, jugador_id=None)
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -159,7 +159,6 @@ def predict():
                                recomendacion=None,
                                jugador_id=None)
 
-# --- LOGIN ADMIN ---
 @app.route("/login", methods=["GET", "POST"])
 def login():
     error = None
@@ -167,7 +166,7 @@ def login():
         password = request.form.get("password", "")
         if password == PASSWORD_ADMIN:
             session["admin"] = True
-            return redirect(url_for("dashboard_general"))
+            return redirect(url_for("ver_equipo"))
         else:
             error = "Contraseña incorrecta"
     return render_template("login.html", error=error)
@@ -177,45 +176,24 @@ def logout():
     session.pop("admin", None)
     return redirect(url_for("home"))
 
-# --- DASHBOARD GENERAL ---
-@app.route("/dashboard")
-def dashboard_general():
-    if not session.get("admin"):
-        return redirect(url_for("login"))
+@app.route("/equipo")
+def ver_equipo():
     try:
         inicializar_db()
         conn = sqlite3.connect('datos.db')
         cursor = conn.cursor()
         cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel, fecha FROM jugadores ORDER BY fecha DESC")
-        todos = cursor.fetchall()
-        cursor.execute("SELECT equipo, AVG(resultado), COUNT(*) FROM jugadores GROUP BY equipo")
-        por_equipo = cursor.fetchall()
-        conn.close()
-        return render_template("dashboard.html", todos=todos, por_equipo=por_equipo)
-    except Exception as e:
-        print("ERROR dashboard:", e)
-        return render_template("dashboard.html", todos=[], por_equipo=[])
-
-# --- DASHBOARD POR EQUIPO ---
-@app.route("/equipo/<nombre_equipo>")
-def dashboard_equipo(nombre_equipo):
-    if not session.get("admin"):
-        return redirect(url_for("login"))
-    try:
-        conn = sqlite3.connect('datos.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT nombre, posicion, resultado, nivel, fecha FROM jugadores WHERE equipo=? ORDER BY fecha DESC", (nombre_equipo,))
         datos = cursor.fetchall()
         conn.close()
-        return render_template("equipo.html", datos=datos, nombre_equipo=nombre_equipo)
+        return render_template("equipo.html", datos=datos)
     except Exception as e:
         print("ERROR equipo:", e)
-        return render_template("equipo.html", datos=[], nombre_equipo=nombre_equipo)
+        return render_template("equipo.html", datos=[])
 
-# --- CHAT IA ---
 @app.route("/chat/<int:jugador_id>")
 def chat(jugador_id):
     try:
+        inicializar_db()
         conn = sqlite3.connect('datos.db')
         cursor = conn.cursor()
         cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel FROM jugadores WHERE id=?", (jugador_id,))
@@ -226,7 +204,7 @@ def chat(jugador_id):
         return render_template("chat.html",
                                nombre=jugador[0],
                                posicion=jugador[1],
-                               equipo=jugador[2],
+                               equipo=jugador[2] or "El Vergel",
                                porcentaje=jugador[3],
                                nivel=jugador[4],
                                jugador_id=jugador_id)
@@ -240,7 +218,7 @@ def chat_mensaje():
         data = request.get_json()
         nombre     = data.get("nombre", "Jugador")
         posicion   = data.get("posicion", "")
-        equipo     = data.get("equipo", "")
+        equipo     = data.get("equipo", "El Vergel")
         porcentaje = data.get("porcentaje", 50)
         nivel      = data.get("nivel", "MEDIO")
         historial  = data.get("historial", [])
