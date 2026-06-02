@@ -7,15 +7,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --verde: #22c55e;
-    --amarillo: #f59e0b;
-    --rojo: #ef4444;
-    --fondo: #0a0f1a;
-    --card: #111827;
-    --borde: #1f2937;
-    --texto: #f9fafb;
-    --muted: #6b7280;
-    --acento: #3b82f6;
+    --verde: #22c55e; --amarillo: #f59e0b; --rojo: #ef4444;
+    --fondo: #0a0f1a; --card: #111827; --borde: #1f2937;
+    --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
@@ -51,7 +45,8 @@
   .tips-lista li::before { content: "→"; color: var(--acento); flex-shrink: 0; }
   .form-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
   .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--muted); }
-  .campo-grupo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .campo-grupo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .campo-grupo-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
   .campo { display: flex; flex-direction: column; gap: 6px; }
   .campo label { font-size: 0.8rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
   .campo input, .campo select { background: var(--fondo); border: 1px solid var(--borde); border-radius: 8px; padding: 10px 14px; color: var(--texto); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; width: 100%; transition: border-color 0.2s; }
@@ -67,20 +62,17 @@
   .escala input[type="radio"] { display: none; }
   .escala-btn { display: block; padding: 8px 4px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: all 0.2s; text-align: center; }
   .escala input[type="radio"]:checked + .escala-btn { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600; }
-  .escala-btn:hover { border-color: var(--acento); color: var(--texto); }
   .escala-etiquetas { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
   .btn-enviar { width: 100%; padding: 14px; background: var(--acento); color: #fff; border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s; }
   .btn-enviar:hover { background: #2563eb; transform: translateY(-1px); }
-  @media (max-width: 500px) { .campo-grupo { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+  @media (max-width: 500px) { .campo-grupo { grid-template-columns: 1fr; } .campo-grupo-3 { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">⚽ <span>ANSIO</span>METER</div>
-  <nav><a href="/equipo">Ver equipo →</a></nav>
+  <nav><a href="/login">Admin →</a></nav>
 </header>
-
 <main>
   <h1 class="page-title">Control de Ansiedad<br>Precompetitiva</h1>
   <p class="page-sub">Evalúa tu estado antes del partido — responde con honestidad</p>
@@ -93,7 +85,7 @@
       </div>
       <div class="resultado-info">
         <h2>{{ nombre }} — Nivel {{ nivel }}</h2>
-        <p>Ansiedad precompetitiva evaluada</p>
+        <p>{{ equipo }} · Ansiedad precompetitiva evaluada</p>
       </div>
     </div>
     <div class="barra-label">
@@ -120,8 +112,7 @@
   <div class="form-card">
     <h2>Formulario del jugador</h2>
     <form action="/predict" method="POST">
-
-      <div class="campo-grupo">
+      <div class="campo-grupo-3">
         <div class="campo">
           <label>Nombre del jugador</label>
           <input type="text" name="nombre" placeholder="Ej: Carlos García" required>
@@ -136,6 +127,16 @@
             <option value="Delantero">Delantero</option>
           </select>
         </div>
+        <div class="campo">
+          <label>Equipo</label>
+          <select name="equipo" required>
+            <option value="">Selecciona...</option>
+            <option value="Sub-13">Sub-13</option>
+            <option value="Sub-15">Sub-15</option>
+            <option value="Sub-17">Sub-17</option>
+            <option value="Sub-19">Sub-19</option>
+          </select>
+        </div>
       </div>
 
       <hr class="divisor">
@@ -143,112 +144,49 @@
 
       <div class="seccion-titulo">😰 Ansiedad y presión</div>
 
+      {% set preguntas_a = [
+        ("q12", "1. Me siento presionado antes de los partidos"),
+        ("q15", "2. Siento nervios antes de competir"),
+        ("q18", "3. Siento ansiedad antes del partido"),
+        ("q30", "4. Siento presión por parte del entrenador"),
+        ("q31", "5. Siento presión por parte de mi familia"),
+        ("q22", "6. Me frustro fácilmente cuando algo sale mal"),
+        ("q28", "7. Me afecta emocionalmente un mal resultado")
+      ] %}
+      {% for name, texto in preguntas_a %}
       <div class="pregunta-item">
-        <p class="pregunta-texto">1. Me siento presionado antes de los partidos</p>
+        <p class="pregunta-texto">{{ texto }}</p>
         <div class="escala">
           {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q12" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
+          <label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
           {% endfor %}
         </div>
         <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
       </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">2. Siento nervios antes de competir</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q15" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">3. Siento ansiedad antes del partido</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q18" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">4. Siento presión por parte del entrenador</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q30" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">5. Siento presión por parte de mi familia</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q31" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">6. Me frustro fácilmente cuando algo sale mal</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q22" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">7. Me afecta emocionalmente un mal resultado</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q28" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
+      {% endfor %}
 
       <div class="seccion-titulo">💪 Confianza y concentración</div>
 
+      {% set preguntas_c = [
+        ("q14", "8. Confío en mi rendimiento en competencia"),
+        ("q17", "9. Confío en mis capacidades antes de jugar"),
+        ("q24", "10. Me mantengo enfocado bajo presión")
+      ] %}
+      {% for name, texto in preguntas_c %}
       <div class="pregunta-item">
-        <p class="pregunta-texto">8. Confío en mi rendimiento en competencia</p>
+        <p class="pregunta-texto">{{ texto }}</p>
         <div class="escala">
           {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q14" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
+          <label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
           {% endfor %}
         </div>
         <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
       </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">9. Confío en mis capacidades antes de jugar</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q17" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
-
-      <div class="pregunta-item">
-        <p class="pregunta-texto">10. Me mantengo enfocado bajo presión</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="q24" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
-        <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
-      </div>
+      {% endfor %}
 
       <button type="submit" class="btn-enviar">Calcular nivel de ansiedad</button>
     </form>
   </div>
 </main>
-
 </body>
 </html>
