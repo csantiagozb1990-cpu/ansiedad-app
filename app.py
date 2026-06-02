@@ -1,12 +1,14 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import sqlite3
 import os
 import joblib
 import numpy as np
 
 app = Flask(__name__)
+app.secret_key = "ansiedad2025"
 
-# Cargar modelo
+PASSWORD_ADMIN = "vergel2025"
+
 try:
     modelo = joblib.load("modelo.pkl")
     print("Modelo cargado correctamente")
@@ -22,6 +24,7 @@ def inicializar_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre TEXT,
             posicion TEXT,
+            equipo TEXT,
             resultado REAL,
             nivel TEXT,
             fecha TEXT DEFAULT (datetime('now','localtime'))
@@ -30,12 +33,12 @@ def inicializar_db():
     conn.commit()
     conn.close()
 
-def guardar_datos(nombre, posicion, resultado, nivel):
+def guardar_datos(nombre, posicion, equipo, resultado, nivel):
     conn = sqlite3.connect('datos.db')
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO jugadores (nombre, posicion, resultado, nivel) VALUES (?, ?, ?, ?)",
-        (nombre, posicion, resultado, nivel)
+        "INSERT INTO jugadores (nombre, posicion, equipo, resultado, nivel) VALUES (?, ?, ?, ?, ?)",
+        (nombre, posicion, equipo, resultado, nivel)
     )
     conn.commit()
     conn.close()
@@ -83,20 +86,19 @@ def predict():
     try:
         nombre = request.form.get("nombre", "Jugador").strip()
         posicion = request.form.get("posicion", "").strip()
+        equipo = request.form.get("equipo", "").strip()
 
-        # Las 10 preguntas reales de tu encuesta
-        q12 = float(request.form.get("q12", 3))  # presionado antes partidos
-        q15 = float(request.form.get("q15", 3))  # nervios antes competir
-        q18 = float(request.form.get("q18", 3))  # ansiedad antes partido
-        q30 = float(request.form.get("q30", 3))  # presión entrenador
-        q31 = float(request.form.get("q31", 3))  # presión familia
-        q22 = float(request.form.get("q22", 3))  # frustración
-        q28 = float(request.form.get("q28", 3))  # afecta mal resultado
-        q14 = float(request.form.get("q14", 3))  # confianza rendimiento
-        q17 = float(request.form.get("q17", 3))  # confianza capacidades
-        q24 = float(request.form.get("q24", 3))  # enfocado bajo presión
+        q12 = float(request.form.get("q12", 3))
+        q15 = float(request.form.get("q15", 3))
+        q18 = float(request.form.get("q18", 3))
+        q30 = float(request.form.get("q30", 3))
+        q31 = float(request.form.get("q31", 3))
+        q22 = float(request.form.get("q22", 3))
+        q28 = float(request.form.get("q28", 3))
+        q14 = float(request.form.get("q14", 3))
+        q17 = float(request.form.get("q17", 3))
+        q24 = float(request.form.get("q24", 3))
 
-        # Calcular porcentaje manual
         preguntas_ansiedad = [q12, q15, q18, q30, q31, q22, q28]
         preguntas_confianza = [q14, q17, q24]
         suma_ansiedad = sum(preguntas_ansiedad)
@@ -104,7 +106,6 @@ def predict():
         porcentaje = round(((suma_ansiedad / 35) * 70 + ((15 - suma_confianza) / 15) * 30), 1)
         porcentaje = max(0, min(100, porcentaje))
 
-        # Usar modelo si está disponible
         if modelo:
             try:
                 features = np.array([[q12, q15, q18, q30, q31, q22, q28, q14, q17, q24]])
@@ -131,7 +132,7 @@ def predict():
         else: color = "rojo"
 
         recomendacion = obtener_recomendacion(porcentaje)
-        guardar_datos(nombre, posicion, porcentaje, nivel)
+        guardar_datos(nombre, posicion, equipo, porcentaje, nivel)
 
         return render_template("index.html",
                                resultado=porcentaje,
@@ -139,28 +140,68 @@ def predict():
                                color=color,
                                nombre=nombre,
                                posicion=posicion,
+                               equipo=equipo,
                                recomendacion=recomendacion)
     except Exception as e:
         print("ERROR:", e)
         return render_template("index.html",
                                resultado="Error",
                                nivel="", color="",
-                               nombre="", posicion="",
+                               nombre="", posicion="", equipo="",
                                recomendacion=None)
 
-@app.route("/equipo")
-def ver_equipo():
+# --- LOGIN ADMIN ---
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    error = None
+    if request.method == "POST":
+        password = request.form.get("password", "")
+        if password == PASSWORD_ADMIN:
+            session["admin"] = True
+            return redirect(url_for("dashboard_general"))
+        else:
+            error = "Contraseña incorrecta"
+    return render_template("login.html", error=error)
+
+@app.route("/logout")
+def logout():
+    session.pop("admin", None)
+    return redirect(url_for("home"))
+
+# --- DASHBOARD GENERAL ---
+@app.route("/dashboard")
+def dashboard_general():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
     try:
         inicializar_db()
         conn = sqlite3.connect('datos.db')
         cursor = conn.cursor()
-        cursor.execute("SELECT nombre, posicion, resultado, nivel, fecha FROM jugadores ORDER BY fecha DESC")
+        cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel, fecha FROM jugadores ORDER BY fecha DESC")
+        todos = cursor.fetchall()
+        cursor.execute("SELECT equipo, AVG(resultado), COUNT(*) FROM jugadores GROUP BY equipo")
+        por_equipo = cursor.fetchall()
+        conn.close()
+        return render_template("dashboard.html", todos=todos, por_equipo=por_equipo)
+    except Exception as e:
+        print("ERROR dashboard:", e)
+        return render_template("dashboard.html", todos=[], por_equipo=[])
+
+# --- DASHBOARD POR EQUIPO ---
+@app.route("/equipo/<nombre_equipo>")
+def dashboard_equipo(nombre_equipo):
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+    try:
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, posicion, resultado, nivel, fecha FROM jugadores WHERE equipo=? ORDER BY fecha DESC", (nombre_equipo,))
         datos = cursor.fetchall()
         conn.close()
-        return render_template("equipo.html", datos=datos)
+        return render_template("equipo.html", datos=datos, nombre_equipo=nombre_equipo)
     except Exception as e:
         print("ERROR equipo:", e)
-        return render_template("equipo.html", datos=[])
+        return render_template("equipo.html", datos=[], nombre_equipo=nombre_equipo)
 
 if __name__ == "__main__":
     inicializar_db()
