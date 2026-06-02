@@ -43,9 +43,10 @@
   .tips-lista { list-style: none; display: flex; flex-direction: column; gap: 6px; }
   .tips-lista li { font-size: 0.875rem; color: var(--texto); display: flex; align-items: flex-start; gap: 8px; }
   .tips-lista li::before { content: "→"; color: var(--acento); flex-shrink: 0; }
+  .btn-chat { display: block; text-align: center; margin-top: 1.2rem; padding: 13px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; border-radius: 10px; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
+  .btn-chat:hover { background: rgba(59,130,246,0.2); border-color: var(--acento); color: #fff; }
   .form-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
   .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--muted); }
-  .campo-grupo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
   .campo-grupo-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
   .campo { display: flex; flex-direction: column; gap: 6px; }
   .campo label { font-size: 0.8rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
@@ -65,7 +66,7 @@
   .escala-etiquetas { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
   .btn-enviar { width: 100%; padding: 14px; background: var(--acento); color: #fff; border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s; }
   .btn-enviar:hover { background: #2563eb; transform: translateY(-1px); }
-  @media (max-width: 500px) { .campo-grupo { grid-template-columns: 1fr; } .campo-grupo-3 { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+  @media (max-width: 500px) { .campo-grupo-3 { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
 </style>
 </head>
 <body>
@@ -105,6 +106,11 @@
         {% endfor %}
       </ul>
     </div>
+    {% endif %}
+    {% if jugador_id %}
+    <a href="/chat/{{ jugador_id }}" class="btn-chat">
+      🧠 Hablar con Ansi — Apoyo psicológico personalizado
+    </a>
     {% endif %}
   </div>
   {% endif %}
