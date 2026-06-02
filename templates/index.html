@@ -6,11 +6,7 @@
 <title>Ansiedad Precompetitiva — Fútbol</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --verde: #22c55e; --amarillo: #f59e0b; --rojo: #ef4444;
-    --fondo: #0a0f1a; --card: #111827; --borde: #1f2937;
-    --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6;
-  }
+  :root { --verde: #22c55e; --amarillo: #f59e0b; --rojo: #ef4444; --fondo: #0a0f1a; --card: #111827; --borde: #1f2937; --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
   header { background: var(--card); border-bottom: 1px solid var(--borde); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
@@ -37,14 +33,14 @@
   .verde .barra-relleno { background: var(--verde); }
   .amarillo .barra-relleno { background: var(--amarillo); }
   .rojo .barra-relleno { background: var(--rojo); }
-  .recomendacion { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
+  .recomendacion { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1.2rem; }
   .recomendacion h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: #93c5fd; }
   .recomendacion p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
   .tips-lista { list-style: none; display: flex; flex-direction: column; gap: 6px; }
   .tips-lista li { font-size: 0.875rem; color: var(--texto); display: flex; align-items: flex-start; gap: 8px; }
   .tips-lista li::before { content: "→"; color: var(--acento); flex-shrink: 0; }
-  .btn-chat { display: block; text-align: center; margin-top: 1.2rem; padding: 14px; background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2)); border: 1px solid rgba(139,92,246,0.4); color: #c4b5fd; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.2s; }
-  .btn-chat:hover { background: linear-gradient(135deg, rgba(59,130,246,0.35), rgba(139,92,246,0.35)); color: #fff; transform: translateY(-1px); }
+  .btn-chat { display: block; text-align: center; padding: 16px; background: linear-gradient(135deg, rgba(59,130,246,0.25), rgba(139,92,246,0.25)); border: 2px solid rgba(139,92,246,0.5); color: #c4b5fd; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.2s; margin-top: 0; }
+  .btn-chat:hover { background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(139,92,246,0.4)); color: #fff; transform: translateY(-2px); box-shadow: 0 4px 20px rgba(139,92,246,0.3); }
   .form-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
   .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--muted); }
   .campo-grupo-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
@@ -79,7 +75,7 @@
   <h1 class="page-title">Control de Ansiedad<br>Precompetitiva</h1>
   <p class="page-sub">Evalúa tu estado antes del partido — responde con honestidad</p>
 
-  {% if resultado and resultado != 'Error' %}
+  {% if resultado is not none and resultado != 'Error' %}
   <div class="resultado-card {{ color }}">
     <div class="resultado-header">
       <div class="semaforo {{ color }}">
@@ -108,11 +104,9 @@
       </ul>
     </div>
     {% endif %}
-    {% if jugador_id %}
     <a href="/chat/{{ jugador_id }}" class="btn-chat">
       🧠 Hablar con Ansi — Apoyo psicológico personalizado
     </a>
-    {% endif %}
   </div>
   {% endif %}
 
@@ -145,52 +139,26 @@
           </select>
         </div>
       </div>
-
       <hr class="divisor">
       <p class="preguntas-titulo">Escala: 1 = Nunca &nbsp;|&nbsp; 3 = A veces &nbsp;|&nbsp; 5 = Siempre</p>
-
       <div class="seccion-titulo">😰 Ansiedad y presión</div>
-
-      {% set preguntas_a = [
-        ("q12", "1. Me siento presionado antes de los partidos"),
-        ("q15", "2. Siento nervios antes de competir"),
-        ("q18", "3. Siento ansiedad antes del partido"),
-        ("q30", "4. Siento presión por parte del entrenador"),
-        ("q31", "5. Siento presión por parte de mi familia"),
-        ("q22", "6. Me frustro fácilmente cuando algo sale mal"),
-        ("q28", "7. Me afecta emocionalmente un mal resultado")
-      ] %}
+      {% set preguntas_a = [("q12","1. Me siento presionado antes de los partidos"),("q15","2. Siento nervios antes de competir"),("q18","3. Siento ansiedad antes del partido"),("q30","4. Siento presión por parte del entrenador"),("q31","5. Siento presión por parte de mi familia"),("q22","6. Me frustro fácilmente cuando algo sale mal"),("q28","7. Me afecta emocionalmente un mal resultado")] %}
       {% for name, texto in preguntas_a %}
       <div class="pregunta-item">
         <p class="pregunta-texto">{{ texto }}</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
+        <div class="escala">{% for v in [1,2,3,4,5] %}<label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>{% endfor %}</div>
         <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
       </div>
       {% endfor %}
-
       <div class="seccion-titulo">💪 Confianza y concentración</div>
-
-      {% set preguntas_c = [
-        ("q14", "8. Confío en mi rendimiento en competencia"),
-        ("q17", "9. Confío en mis capacidades antes de jugar"),
-        ("q24", "10. Me mantengo enfocado bajo presión")
-      ] %}
+      {% set preguntas_c = [("q14","8. Confío en mi rendimiento en competencia"),("q17","9. Confío en mis capacidades antes de jugar"),("q24","10. Me mantengo enfocado bajo presión")] %}
       {% for name, texto in preguntas_c %}
       <div class="pregunta-item">
         <p class="pregunta-texto">{{ texto }}</p>
-        <div class="escala">
-          {% for v in [1,2,3,4,5] %}
-          <label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>
-          {% endfor %}
-        </div>
+        <div class="escala">{% for v in [1,2,3,4,5] %}<label><input type="radio" name="{{ name }}" value="{{ v }}" required><span class="escala-btn">{{ v }}</span></label>{% endfor %}</div>
         <div class="escala-etiquetas"><span>Nunca</span><span>Siempre</span></div>
       </div>
       {% endfor %}
-
       <button type="submit" class="btn-enviar">Calcular nivel de ansiedad</button>
     </form>
   </div>
