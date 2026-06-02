@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acceso Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --fondo: #0a0f1a; --card: #111827; --borde: #1f2937; --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .login-card { background: var(--card); border: 1px solid var(--borde); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 380px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; letter-spacing: 2px; text-align: center; margin-bottom: 0.3rem; }
+  .logo span { color: var(--acento); }
+  .subtitulo { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+  .campo { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.2rem; }
+  .campo label { font-size: 0.8rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .campo input { background: var(--fondo); border: 1px solid var(--borde); border-radius: 8px; padding: 12px 14px; color: var(--texto); font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; width: 100%; transition: border-color 0.2s; }
+  .campo input:focus { border-color: var(--acento); }
+  .btn { width: 100%; padding: 14px; background: var(--acento); color: #fff; border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; transition: background 0.2s; }
+  .btn:hover { background: #2563eb; }
+  .error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 8px; padding: 10px 14px; font-size: 0.9rem; margin-bottom: 1rem; text-align: center; }
+  .volver { display: block; text-align: center; margin-top: 1.2rem; color: var(--muted); font-size: 0.85rem; text-decoration: none; }
+  .volver:hover { color: var(--texto); }
+</style>
+</head>
+<body>
+<div class="login-card">
+  <div class="logo">⚽ <span>ANSIO</span>METER</div>
+  <p class="subtitulo">Acceso exclusivo para el cuerpo técnico</p>
+  {% if error %}
+  <div class="error">{{ error }}</div>
+  {% endif %}
+  <form method="POST">
+    <div class="campo">
+      <label>Contraseña</label>
+      <input type="password" name="password" placeholder="••••••••" autofocus required>
+    </div>
+    <button type="submit" class="btn">Ingresar</button>
+  </form>
+  <a href="/" class="volver">← Volver al formulario</a>
+</div>
+</body>
+</html>
