@@ -1,28 +1,199 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Jugadores</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard del Equipo — Ansiedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --verde: #22c55e;
+    --amarillo: #f59e0b;
+    --rojo: #ef4444;
+    --fondo: #0a0f1a;
+    --card: #111827;
+    --borde: #1f2937;
+    --texto: #f9fafb;
+    --muted: #6b7280;
+    --acento: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  header { background: var(--card); border-bottom: 1px solid var(--borde); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
+  .logo span { color: var(--acento); }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 6px 16px; border-radius: 8px; border: 1px solid var(--borde); transition: all 0.2s; }
+  nav a:hover { color: var(--texto); border-color: var(--acento); }
+  main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.4rem; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .metrica-card { background: var(--card); border: 1px solid var(--borde); border-radius: 14px; padding: 1.2rem 1.4rem; }
+  .metrica-label { font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metrica-valor { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 1px; line-height: 1; }
+  .metrica-valor.verde { color: var(--verde); }
+  .metrica-valor.amarillo { color: var(--amarillo); }
+  .metrica-valor.rojo { color: var(--rojo); }
+  .metrica-valor.blanco { color: var(--texto); }
+  .grafico-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+  .grafico-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: var(--muted); margin-bottom: 1.2rem; }
+  .grafico-contenedor { position: relative; height: 300px; }
+  .tabla-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; }
+  .tabla-header-row { padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 1px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; padding: 10px 16px; font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--borde); background: rgba(255,255,255,0.02); }
+  tbody tr { border-bottom: 1px solid var(--borde); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td { padding: 12px 16px; font-size: 0.9rem; color: var(--texto); }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
+  .badge.BAJO { background: rgba(34,197,94,0.15); color: var(--verde); }
+  .badge.MEDIO { background: rgba(245,158,11,0.15); color: var(--amarillo); }
+  .badge.ALTO { background: rgba(239,68,68,0.15); color: var(--rojo); }
+  .barra-mini { height: 6px; border-radius: 999px; background: var(--borde); width: 100px; overflow: hidden; }
+  .barra-mini-relleno { height: 100%; border-radius: 999px; }
+  .barra-mini-relleno.BAJO { background: var(--verde); }
+  .barra-mini-relleno.MEDIO { background: var(--amarillo); }
+  .barra-mini-relleno.ALTO { background: var(--rojo); }
+  .vacio { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.95rem; }
+  @media (max-width: 600px) { .metricas { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+</style>
 </head>
-
 <body>
 
-<h2>Historial de Jugadores</h2>
+<header>
+  <div class="logo">⚽ <span>ANSIO</span>METER</div>
+  <nav><a href="/">← Evaluar jugador</a></nav>
+</header>
 
-<table border="1">
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Ansiedad</th>
-    </tr>
+<main>
+  <h1 class="page-title">Dashboard<br>del Equipo</h1>
+  <p class="page-sub">Resumen de ansiedad precompetitiva del grupo</p>
 
-    {% for jugador in datos %}
-    <tr>
-        <td>{{jugador[0]}}</td>
-        <td>{{jugador[1]}}</td>
-        <td>{{jugador[2]}}</td>
-    </tr>
-    {% endfor %}
-</table>
+  {% if datos %}
+    {% set total = datos|length %}
+    {% set promedio = (datos|map(attribute=2)|list|sum / total)|round(1) %}
+    {% set bajos = datos|selectattr(3, 'equalto', 'BAJO')|list|length %}
+    {% set medios = datos|selectattr(3, 'equalto', 'MEDIO')|list|length %}
+    {% set altos = datos|selectattr(3, 'equalto', 'ALTO')|list|length %}
+
+    <div class="metricas">
+      <div class="metrica-card">
+        <div class="metrica-label">Jugadores evaluados</div>
+        <div class="metrica-valor blanco">{{ total }}</div>
+      </div>
+      <div class="metrica-card">
+        <div class="metrica-label">Promedio del equipo</div>
+        <div class="metrica-valor {% if promedio < 40 %}verde{% elif promedio < 70 %}amarillo{% else %}rojo{% endif %}">{{ promedio }}%</div>
+      </div>
+      <div class="metrica-card">
+        <div class="metrica-label">Nivel predominante</div>
+        <div class="metrica-valor {% if altos > medios and altos > bajos %}rojo{% elif medios > bajos %}amarillo{% else %}verde{% endif %}">
+          {% if altos > medios and altos > bajos %}ALTO{% elif medios > bajos %}MEDIO{% else %}BAJO{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="grafico-card">
+      <div class="grafico-titulo">Ansiedad por jugador (%)</div>
+      <div class="grafico-contenedor">
+        <canvas id="grafico"></canvas>
+      </div>
+    </div>
+
+    <div class="tabla-card">
+      <div class="tabla-header-row">Historial de jugadores</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Posición</th>
+            <th>Ansiedad</th>
+            <th>Nivel</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for jugador in datos %}
+          <tr>
+            <td style="color: var(--muted);">{{ loop.index }}</td>
+            <td><strong>{{ jugador[0] }}</strong></td>
+            <td style="color: var(--muted);">{{ jugador[1] or '—' }}</td>
+            <td>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span>{{ jugador[2] }}%</span>
+                <div class="barra-mini">
+                  <div class="barra-mini-relleno {{ jugador[3] }}" style="width: {{ jugador[2] }}%"></div>
+                </div>
+              </div>
+            </td>
+            <td><span class="badge {{ jugador[3] }}">{{ jugador[3] }}</span></td>
+            <td style="color: var(--muted); font-size: 0.82rem;">{{ jugador[4][:10] if jugador[4] else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const nombres = {{ datos|map(attribute=0)|list|tojson }};
+      const valores = {{ datos|map(attribute=2)|list|tojson }};
+      const niveles = {{ datos|map(attribute=3)|list|tojson }};
+      const colores = niveles.map(n => {
+        if (n === 'BAJO') return 'rgba(34,197,94,0.8)';
+        if (n === 'MEDIO') return 'rgba(245,158,11,0.8)';
+        return 'rgba(239,68,68,0.8)';
+      });
+      const ctx = document.getElementById('grafico').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: nombres,
+          datasets: [{
+            label: 'Ansiedad (%)',
+            data: valores,
+            backgroundColor: colores,
+            borderRadius: 6,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => ` ${ctx.parsed.y}% — ${niveles[ctx.dataIndex]}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: { color: '#6b7280', font: { family: 'DM Sans', size: 12 } },
+              grid: { color: '#1f2937' }
+            },
+            y: {
+              min: 0, max: 100,
+              ticks: { color: '#6b7280', callback: v => v + '%', font: { family: 'DM Sans', size: 12 } },
+              grid: { color: '#1f2937' }
+            }
+          }
+        }
+      });
+    </script>
+
+  {% else %}
+    <div class="tabla-card">
+      <div class="vacio">
+        <p>Aún no hay jugadores evaluados.</p>
+        <p style="margin-top: 8px;"><a href="/" style="color: var(--acento);">Ir a evaluar →</a></p>
+      </div>
+    </div>
+  {% endif %}
+</main>
 
 </body>
 </html>
