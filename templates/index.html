@@ -1,140 +1,173 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Evaluación de Ansiedad Precompetitiva</title>
-
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 30px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        h1 {
-            color: #1e3c72;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background-color: #2980b9;
-        }
-
-        .resultado {
-            margin-top: 20px;
-            padding: 15px;
-            background: #ecf0f1;
-            border-radius: 6px;
-        }
-
-        .bajo { color: green; }
-        .medio { color: orange; }
-        .alto { color: red; }
-    </style>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ansiedad Precompetitiva — Fútbol</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --verde: #22c55e;
+    --amarillo: #f59e0b;
+    --rojo: #ef4444;
+    --fondo: #0a0f1a;
+    --card: #111827;
+    --borde: #1f2937;
+    --texto: #f9fafb;
+    --muted: #6b7280;
+    --acento: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  header { background: var(--card); border-bottom: 1px solid var(--borde); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
+  .logo span { color: var(--acento); }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 6px 16px; border-radius: 8px; border: 1px solid var(--borde); transition: all 0.2s; }
+  nav a:hover { color: var(--texto); border-color: var(--acento); }
+  main { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.4rem; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  .resultado-card { border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--borde); background: var(--card); animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  .resultado-header { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
+  .semaforo { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+  .semaforo.verde { background: rgba(34,197,94,0.15); box-shadow: 0 0 24px rgba(34,197,94,0.4); }
+  .semaforo.amarillo { background: rgba(245,158,11,0.15); box-shadow: 0 0 24px rgba(245,158,11,0.4); }
+  .semaforo.rojo { background: rgba(239,68,68,0.15); box-shadow: 0 0 24px rgba(239,68,68,0.4); }
+  .resultado-info h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; }
+  .resultado-info p { color: var(--muted); font-size: 0.9rem; }
+  .barra-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+  .barra-label strong { font-size: 1.1rem; font-weight: 600; }
+  .barra-fondo { background: var(--borde); border-radius: 999px; height: 12px; overflow: hidden; margin-bottom: 1.5rem; }
+  .barra-relleno { height: 100%; border-radius: 999px; }
+  .verde .barra-relleno { background: var(--verde); }
+  .amarillo .barra-relleno { background: var(--amarillo); }
+  .rojo .barra-relleno { background: var(--rojo); }
+  .recomendacion { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .recomendacion h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: #93c5fd; }
+  .recomendacion p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
+  .tips-lista { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .tips-lista li { font-size: 0.875rem; color: var(--texto); display: flex; align-items: flex-start; gap: 8px; }
+  .tips-lista li::before { content: "→"; color: var(--acento); flex-shrink: 0; }
+  .form-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
+  .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--muted); }
+  .campo-grupo { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .campo { display: flex; flex-direction: column; gap: 6px; }
+  .campo label { font-size: 0.8rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .campo input, .campo select { background: var(--fondo); border: 1px solid var(--borde); border-radius: 8px; padding: 10px 14px; color: var(--texto); font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; width: 100%; transition: border-color 0.2s; }
+  .campo input:focus, .campo select:focus { border-color: var(--acento); }
+  .campo select option { background: var(--card); }
+  .divisor { border: none; border-top: 1px solid var(--borde); margin: 1.5rem 0; }
+  .preguntas-titulo { font-size: 0.85rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.2rem; }
+  .pregunta-item { margin-bottom: 1.4rem; }
+  .pregunta-texto { font-size: 0.95rem; color: var(--texto); margin-bottom: 10px; line-height: 1.5; }
+  .escala { display: flex; gap: 8px; }
+  .escala label { flex: 1; text-align: center; cursor: pointer; }
+  .escala input[type="radio"] { display: none; }
+  .escala-btn { display: block; padding: 8px 4px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: all 0.2s; text-align: center; }
+  .escala input[type="radio"]:checked + .escala-btn { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600; }
+  .escala-btn:hover { border-color: var(--acento); color: var(--texto); }
+  .escala-etiquetas { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+  .btn-enviar { width: 100%; padding: 14px; background: var(--acento); color: #fff; border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s; }
+  .btn-enviar:hover { background: #2563eb; transform: translateY(-1px); }
+  @media (max-width: 500px) { .campo-grupo { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
+</style>
 </head>
-
 <body>
 
-<div class="container">
+<header>
+  <div class="logo">⚽ <span>ANSIO</span>METER</div>
+  <nav><a href="/equipo">Ver equipo →</a></nav>
+</header>
 
-<h1>Evaluación de Ansiedad Precompetitiva</h1>
+<main>
+  <h1 class="page-title">Control de Ansiedad<br>Precompetitiva</h1>
+  <p class="page-sub">Evalúa tu estado antes del partido — responde con honestidad</p>
 
-<p>
-Esta herramienta utiliza inteligencia artificial para estimar el nivel de ansiedad en jugadores antes de competir.
-El modelo fue entrenado mediante Machine Learning (Random Forest) para detectar patrones psicológicos relacionados con la ansiedad competitiva.
-</p>
+  {% if resultado and resultado != 'Error' %}
+  <div class="resultado-card {{ color }}">
+    <div class="resultado-header">
+      <div class="semaforo {{ color }}">
+        {% if color == 'verde' %}🟢{% elif color == 'amarillo' %}🟡{% else %}🔴{% endif %}
+      </div>
+      <div class="resultado-info">
+        <h2>{{ nombre }} — Nivel {{ nivel }}</h2>
+        <p>Ansiedad precompetitiva evaluada</p>
+      </div>
+    </div>
+    <div class="barra-label">
+      <span>Nivel de ansiedad</span>
+      <strong>{{ resultado }}%</strong>
+    </div>
+    <div class="barra-fondo">
+      <div class="barra-relleno" style="width: {{ resultado }}%"></div>
+    </div>
+    {% if recomendacion %}
+    <div class="recomendacion">
+      <h3>{{ recomendacion.titulo }}</h3>
+      <p>{{ recomendacion.texto }}</p>
+      <ul class="tips-lista">
+        {% for tip in recomendacion.tips %}
+        <li>{{ tip }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
 
-<h3>¿Cómo responder?</h3>
+  <div class="form-card">
+    <h2>Formulario del jugador</h2>
+    <form action="/predict" method="POST">
+      <div class="campo-grupo">
+        <div class="campo">
+          <label>Nombre del jugador</label>
+          <input type="text" name="nombre" placeholder="Ej: Carlos García" required>
+        </div>
+        <div class="campo">
+          <label>Posición</label>
+          <select name="posicion" required>
+            <option value="">Selecciona...</option>
+            <option value="Portero">Portero</option>
+            <option value="Defensa">Defensa</option>
+            <option value="Centrocampista">Centrocampista</option>
+            <option value="Delantero">Delantero</option>
+          </select>
+        </div>
+      </div>
+      <hr class="divisor">
+      <p class="preguntas-titulo">Preguntas — Escala del 1 (Nada) al 5 (Mucho)</p>
 
-<p>Responde cada pregunta con un número del <b>1 al 5</b>:</p>
+      {% set preguntas = [
+        ("1", "Me siento nervioso o tenso antes del partido"),
+        ("2", "Tengo pensamientos negativos sobre mi rendimiento"),
+        ("3", "Noto que mi corazón late más rápido de lo normal"),
+        ("4", "Me preocupa cometer errores durante el juego"),
+        ("5", "Siento tensión muscular o rigidez en el cuerpo"),
+        ("6", "Me cuesta concentrarme en lo que debo hacer"),
+        ("7", "Tengo miedo de decepcionar a mis compañeros o al entrenador"),
+        ("8", "Siento que la presión del partido me supera")
+      ] %}
 
-<ul>
-<li>1 = Muy bajo</li>
-<li>2 = Bajo</li>
-<li>3 = Moderado</li>
-<li>4 = Alto</li>
-<li>5 = Muy alto</li>
-</ul>
+      {% for num, texto in preguntas %}
+      <div class="pregunta-item">
+        <p class="pregunta-texto">{{ loop.index }}. {{ texto }}</p>
+        <div class="escala">
+          {% for v in [1,2,3,4,5] %}
+          <label>
+            <input type="radio" name="q{{ num }}" value="{{ v }}" required>
+            <span class="escala-btn">{{ v }}</span>
+          </label>
+          {% endfor %}
+        </div>
+        <div class="escala-etiquetas"><span>Nada</span><span>Mucho</span></div>
+      </div>
+      {% endfor %}
 
-<p>
-🔹 Responde con sinceridad<br>
-🔹 No dejes campos vacíos<br>
-🔹 Esto es una herramienta de apoyo, no un diagnóstico clínico
-</p>
-
-<form action="/predict" method="post">
-
-    <label>¿Te sientes nervioso antes del partido?</label>
-    <input type="number" name="q1" min="1" max="5" required>
-
-    <label>¿Confías en tu rendimiento?</label>
-    <input type="number" name="q2" min="1" max="5" required>
-
-    <label>¿Sientes presión antes de competir?</label>
-    <input type="number" name="q3" min="1" max="5" required>
-
-    <button type="submit">Evaluar Ansiedad</button>
-
-</form>
-
-{% if resultado %}
-<div class="resultado">
-
-    <h3>Resultado</h3>
-
-    <p><b>Probabilidad de ansiedad:</b> {{resultado}} %</p>
-
-    <p>
-        <b>Nivel:</b>
-        {% if "BAJO" in nivel %}
-            <span class="bajo">{{nivel}}</span>
-        {% elif "MEDIO" in nivel %}
-            <span class="medio">{{nivel}}</span>
-        {% else %}
-            <span class="alto">{{nivel}}</span>
-        {% endif %}
-    </p>
-
-    <p>
-    Este resultado es una estimación basada en inteligencia artificial.
-    Puede ayudar a identificar niveles de ansiedad y apoyar la toma de decisiones en el entrenamiento deportivo.
-    </p>
-
-</div>
-{% endif %}
-
-</div>
+      <button type="submit" class="btn-enviar">Calcular nivel de ansiedad</button>
+    </form>
+  </div>
+</main>
 
 </body>
 </html>
