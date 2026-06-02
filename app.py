@@ -7,7 +7,6 @@ import requests as req_http
 
 app = Flask(__name__)
 app.secret_key = "ansiedad2025"
-
 PASSWORD_ADMIN = "vergel2025"
 
 try:
@@ -49,38 +48,25 @@ def obtener_recomendacion(porcentaje):
         return {
             "titulo": "Ansiedad Baja — ¡Estás listo!",
             "texto": "Tu nivel de activación es óptimo. Mantén tu rutina de calentamiento habitual, confía en tu preparación y enfócate en disfrutar el partido.",
-            "tips": [
-                "Realiza tu calentamiento normal",
-                "Visualiza jugadas positivas por 2 minutos",
-                "Habla con tus compañeros y mantén buen ambiente"
-            ]
+            "tips": ["Realiza tu calentamiento normal", "Visualiza jugadas positivas por 2 minutos", "Habla con tus compañeros y mantén buen ambiente"]
         }
     elif porcentaje < 70:
         return {
             "titulo": "Ansiedad Media — Maneja la presión",
             "texto": "Sientes algo de presión, lo cual es normal y puede ayudarte a rendir mejor. Usa estas técnicas para canalizarla positivamente.",
-            "tips": [
-                "Respira profundo: inhala 4 segundos, exhala 6 segundos",
-                "Repite una frase motivadora que uses habitualmente",
-                "Enfócate solo en el primer minuto del partido, no en el resultado final"
-            ]
+            "tips": ["Respira profundo: inhala 4 segundos, exhala 6 segundos", "Repite una frase motivadora que uses habitualmente", "Enfócate solo en el primer minuto del partido, no en el resultado final"]
         }
     else:
         return {
             "titulo": "Ansiedad Alta — Necesitas calmarte",
             "texto": "Tu nivel de ansiedad es elevado. Es importante que uses técnicas de relajación antes del partido para recuperar el control.",
-            "tips": [
-                "Haz 5 respiraciones lentas y profundas ahora mismo",
-                "Sacude las manos y los brazos para liberar tensión muscular",
-                "Habla con el preparador físico o psicólogo del equipo",
-                "Recuerda un partido anterior en que jugaste muy bien"
-            ]
+            "tips": ["Haz 5 respiraciones lentas y profundas ahora mismo", "Sacude las manos y los brazos para liberar tensión muscular", "Habla con el preparador físico o psicólogo del equipo", "Recuerda un partido anterior en que jugaste muy bien"]
         }
 
 @app.route("/")
 def home():
     inicializar_db()
-    return render_template("index.html", resultado=None, jugador_id=None)
+    return render_template("index.html", resultado=None, jugador_id=None, nivel=None, color=None, nombre=None, posicion=None, equipo=None, recomendacion=None)
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -100,10 +86,8 @@ def predict():
         q17 = float(request.form.get("q17", 3))
         q24 = float(request.form.get("q24", 3))
 
-        preguntas_ansiedad = [q12, q15, q18, q30, q31, q22, q28]
-        preguntas_confianza = [q14, q17, q24]
-        suma_ansiedad = sum(preguntas_ansiedad)
-        suma_confianza = sum(preguntas_confianza)
+        suma_ansiedad = q12 + q15 + q18 + q30 + q31 + q22 + q28
+        suma_confianza = q14 + q17 + q24
         porcentaje = round(((suma_ansiedad / 35) * 70 + ((15 - suma_confianza) / 15) * 30), 1)
         porcentaje = max(0, min(100, porcentaje))
 
@@ -112,12 +96,9 @@ def predict():
                 features = np.array([[q12, q15, q18, q30, q31, q22, q28, q14, q17, q24]])
                 pred = modelo.predict(features)[0]
                 nivel = pred
-                if nivel == "BAJO":
-                    porcentaje = min(porcentaje, 39)
-                elif nivel == "MEDIO":
-                    porcentaje = max(40, min(porcentaje, 69))
-                else:
-                    porcentaje = max(70, porcentaje)
+                if nivel == "BAJO": porcentaje = min(porcentaje, 39)
+                elif nivel == "MEDIO": porcentaje = max(40, min(porcentaje, 69))
+                else: porcentaje = max(70, porcentaje)
             except Exception as e:
                 print("Error modelo:", e)
                 if porcentaje < 40: nivel = "BAJO"
@@ -153,11 +134,9 @@ def predict():
     except Exception as e:
         print("ERROR:", e)
         return render_template("index.html",
-                               resultado="Error",
-                               nivel="", color="",
-                               nombre="", posicion="", equipo="",
-                               recomendacion=None,
-                               jugador_id=None)
+                               resultado=None, nivel=None, color=None,
+                               nombre=None, posicion=None, equipo=None,
+                               recomendacion=None, jugador_id=None)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -235,7 +214,6 @@ def chat_mensaje():
 Estás hablando con {nombre}, un jugador de {posicion} del equipo {equipo}.
 Acaba de completar una evaluación de ansiedad precompetitiva y obtuvo un {porcentaje}% — nivel {nivel}.
 Sus factores más relevantes son: {variables}.
-
 Tu rol es:
 - Dar apoyo emocional cálido y empático
 - Usar lenguaje simple, cercano y motivador, apropiado para un joven deportista de 13-17 años
@@ -246,18 +224,13 @@ Tu rol es:
 - Si el jugador expresa algo muy serio (autolesión, depresión profunda), recomienda hablar con un adulto de confianza
 Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su terapeuta."""
 
-        mensajes_groq = []
-        for m in historial:
-            mensajes_groq.append({"role": m["role"], "content": m["content"]})
+        mensajes_groq = [{"role": m["role"], "content": m["content"]} for m in historial]
         mensajes_groq.append({"role": "user", "content": mensaje})
 
         groq_key = os.environ.get("GROQ_API_KEY", "")
         response = req_http.post(
             "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {groq_key}",
-                "Content-Type": "application/json"
-            },
+            headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
             json={
                 "model": "llama3-8b-8192",
                 "messages": [{"role": "system", "content": system_prompt}] + mensajes_groq,
@@ -266,10 +239,8 @@ Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su te
             },
             timeout=15
         )
-        respuesta = response.json()
-        texto = respuesta["choices"][0]["message"]["content"]
+        texto = response.json()["choices"][0]["message"]["content"]
         return jsonify({"respuesta": texto})
-
     except Exception as e:
         print("ERROR chat_mensaje:", e)
         return jsonify({"respuesta": "Lo siento, tuve un problema. ¿Puedes intentarlo de nuevo?"})
