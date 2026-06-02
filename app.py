@@ -1,116 +1,145 @@
-from flask import Flask, render_template, request
-import joblib
-import numpy as np
+from flask import Flask, render_template, request, jsonify
 import sqlite3
+import os
 
 app = Flask(__name__)
 
-# ✅ cargar modelo
-try:
-    modelo = joblib.load("modelo.pkl")
-except:
-    modelo = None
-
-
-# ✅ guardar datos
-def guardar_datos(nombre, resultado):
+def inicializar_db():
     conn = sqlite3.connect('datos.db')
     cursor = conn.cursor()
-
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS jugadores (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        resultado REAL
-    )
+        CREATE TABLE IF NOT EXISTS jugadores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT,
+            posicion TEXT,
+            resultado REAL,
+            nivel TEXT,
+            fecha TEXT DEFAULT (datetime('now','localtime'))
+        )
     ''')
-
-    cursor.execute("INSERT INTO jugadores (nombre, resultado) VALUES (?, ?)", 
-                   (nombre, resultado))
-
     conn.commit()
     conn.close()
 
-
-# ✅ PAGINA PRINCIPAL
-@app.route("/")
-def home():
-    return render_template("index.html")
-
-
-# ✅ HISTORIAL DE JUGADORES (LO NUEVO)
-@app.route("/jugadores")
-def ver_jugadores():
+def guardar_datos(nombre, posicion, resultado, nivel):
     conn = sqlite3.connect('datos.db')
     cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM jugadores")
-    datos = cursor.fetchall()
-
+    cursor.execute(
+        "INSERT INTO jugadores (nombre, posicion, resultado, nivel) VALUES (?, ?, ?, ?)",
+        (nombre, posicion, resultado, nivel)
+    )
+    conn.commit()
     conn.close()
 
-    return render_template("jugadores.html", datos=datos)
+def obtener_recomendacion(porcentaje):
+    if porcentaje < 40:
+        return {
+            "titulo": "Ansiedad Baja — ¡Estás listo!",
+            "texto": "Tu nivel de activación es óptimo. Mantén tu rutina de calentamiento habitual, confía en tu preparación y enfócate en disfrutar el partido.",
+            "tips": [
+                "Realiza tu calentamiento normal",
+                "Visualiza jugadas positivas por 2 minutos",
+                "Habla con tus compañeros y mantén buen ambiente"
+            ]
+        }
+    elif porcentaje < 70:
+        return {
+            "titulo": "Ansiedad Media — Maneja la presión",
+            "texto": "Sientes algo de presión, lo cual es normal y puede ayudarte a rendir mejor. Usa estas técnicas para canalizarla positivamente.",
+            "tips": [
+                "Respira profundo: inhala 4 segundos, exhala 6 segundos",
+                "Repite una frase motivadora que uses habitualmente",
+                "Enfócate solo en el primer minuto del partido, no en el resultado final"
+            ]
+        }
+    else:
+        return {
+            "titulo": "Ansiedad Alta — Necesitas calmarte",
+            "texto": "Tu nivel de ansiedad es elevado. Es importante que uses técnicas de relajación antes del partido para recuperar el control.",
+            "tips": [
+                "Haz 5 respiraciones lentas y profundas ahora mismo",
+                "Sacude las manos y los brazos para liberar tensión muscular",
+                "Habla con el preparador físico o psicólogo del equipo",
+                "Recuerda un partido anterior en que jugaste muy bien"
+            ]
+        }
 
+@app.route("/")
+def home():
+    inicializar_db()
+    return render_template("index.html")
 
-# ✅ PREDICCIÓN
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        nombre = request.form.get("nombre")
+        nombre = request.form.get("nombre", "Jugador").strip()
+        posicion = request.form.get("posicion", "").strip()
 
-        q1 = float(request.form.get("q1", 0))
-        q2 = float(request.form.get("q2", 0))
-        q3 = float(request.form.get("q3", 0))
-        q4 = float(request.form.get("q4", 0))
-        q5 = float(request.form.get("q5", 0))
-        q6 = float(request.form.get("q6", 0))
-        q7 = float(request.form.get("q7", 0))
-        q8 = float(request.form.get("q8", 0))
+        preguntas = []
+        for i in range(1, 9):
+            valor = float(request.form.get(f"q{i}", 1))
+            valor = max(1, min(5, valor))
+            preguntas.append(valor)
 
-        datos = [q1, q2, q3, q4, q5, q6, q7, q8]
+        puntaje = sum(preguntas)
+        porcentaje = round((puntaje / 40) * 100, 1)
 
-        # completar para modelo Orange
-        while len(datos) < 20:
-            datos.append(0)
-
-        datos = np.array([datos])
-
-        # predicción
-        if modelo:
-            try:
-                prob = modelo.predict_proba(datos)
-                porcentaje = round(prob[0][1] * 100, 2)
-            except:
-                porcentaje = (sum(datos[:8]) / 40) * 100
-        else:
-            porcentaje = (sum(datos[:8]) / 40) * 100
-
-        # nivel
         if porcentaje < 40:
-            nivel = "BAJO 🟢"
+            nivel = "BAJO"
+            color = "verde"
         elif porcentaje < 70:
-            nivel = "MEDIO 🟡"
+            nivel = "MEDIO"
+            color = "amarillo"
         else:
-            nivel = "ALTO 🔴"
+            nivel = "ALTO"
+            color = "rojo"
 
-        # ✅ guardar datos
-        guardar_datos(nombre, porcentaje)
+        recomendacion = obtener_recomendacion(porcentaje)
+        guardar_datos(nombre, posicion, porcentaje, nivel)
 
         return render_template("index.html",
                                resultado=porcentaje,
                                nivel=nivel,
-                               nombre=nombre)
-
+                               color=color,
+                               nombre=nombre,
+                               posicion=posicion,
+                               recomendacion=recomendacion)
     except Exception as e:
         print("ERROR:", e)
-
         return render_template("index.html",
                                resultado="Error",
-                               nivel="Error del sistema")
+                               nivel="",
+                               color="",
+                               nombre="",
+                               posicion="",
+                               recomendacion=None)
 
+@app.route("/equipo")
+def ver_equipo():
+    try:
+        inicializar_db()
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, posicion, resultado, nivel, fecha FROM jugadores ORDER BY fecha DESC")
+        datos = cursor.fetchall()
+        conn.close()
+        return render_template("equipo.html", datos=datos)
+    except Exception as e:
+        print("ERROR equipo:", e)
+        return render_template("equipo.html", datos=[])
 
-# ✅ necesario para Render
+@app.route("/datos_grafico")
+def datos_grafico():
+    try:
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, resultado, nivel FROM jugadores ORDER BY id DESC LIMIT 20")
+        datos = cursor.fetchall()
+        conn.close()
+        return jsonify([{"nombre": d[0], "porcentaje": d[1], "nivel": d[2]} for d in datos])
+    except Exception as e:
+        return jsonify([])
+
 if __name__ == "__main__":
-    import os
+    inicializar_db()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
