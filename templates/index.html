@@ -37,14 +37,14 @@
   .verde .barra-relleno { background: var(--verde); }
   .amarillo .barra-relleno { background: var(--amarillo); }
   .rojo .barra-relleno { background: var(--rojo); }
-  .recomendacion { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1.2rem 1.4rem; }
+  .recomendacion { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.2); border-radius: 12px; padding: 1.2rem 1.4rem; margin-bottom: 1rem; }
   .recomendacion h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: #93c5fd; }
   .recomendacion p { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.6; }
   .tips-lista { list-style: none; display: flex; flex-direction: column; gap: 6px; }
   .tips-lista li { font-size: 0.875rem; color: var(--texto); display: flex; align-items: flex-start; gap: 8px; }
   .tips-lista li::before { content: "→"; color: var(--acento); flex-shrink: 0; }
-  .btn-chat { display: block; text-align: center; margin-top: 1.2rem; padding: 13px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; border-radius: 10px; text-decoration: none; font-weight: 500; font-size: 0.95rem; transition: all 0.2s; }
-  .btn-chat:hover { background: rgba(59,130,246,0.2); border-color: var(--acento); color: #fff; }
+  .btn-chat { display: block; text-align: center; margin-top: 1.2rem; padding: 14px; background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2)); border: 1px solid rgba(139,92,246,0.4); color: #c4b5fd; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1rem; transition: all 0.2s; }
+  .btn-chat:hover { background: linear-gradient(135deg, rgba(59,130,246,0.35), rgba(139,92,246,0.35)); color: #fff; transform: translateY(-1px); }
   .form-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; }
   .form-card h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--muted); }
   .campo-grupo-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
@@ -63,6 +63,7 @@
   .escala input[type="radio"] { display: none; }
   .escala-btn { display: block; padding: 8px 4px; border: 1px solid var(--borde); border-radius: 8px; font-size: 0.9rem; font-weight: 500; color: var(--muted); transition: all 0.2s; text-align: center; }
   .escala input[type="radio"]:checked + .escala-btn { background: var(--acento); border-color: var(--acento); color: #fff; font-weight: 600; }
+  .escala-btn:hover { border-color: var(--acento); color: var(--texto); }
   .escala-etiquetas { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
   .btn-enviar { width: 100%; padding: 14px; background: var(--acento); color: #fff; border: none; border-radius: 10px; font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 2px; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s; }
   .btn-enviar:hover { background: #2563eb; transform: translateY(-1px); }
