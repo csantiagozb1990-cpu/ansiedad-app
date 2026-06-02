@@ -30,6 +30,10 @@ def inicializar_db():
             fecha TEXT DEFAULT (datetime('now','localtime'))
         )
     ''')
+    try:
+        cursor.execute("ALTER TABLE jugadores ADD COLUMN equipo TEXT")
+    except:
+        pass
     conn.commit()
     conn.close()
 
