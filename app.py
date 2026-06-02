@@ -1,8 +1,18 @@
 from flask import Flask, render_template, request, jsonify
 import sqlite3
 import os
+import joblib
+import numpy as np
 
 app = Flask(__name__)
+
+# Cargar modelo
+try:
+    modelo = joblib.load("modelo.pkl")
+    print("Modelo cargado correctamente")
+except Exception as e:
+    modelo = None
+    print("Error cargando modelo:", e)
 
 def inicializar_db():
     conn = sqlite3.connect('datos.db')
@@ -74,24 +84,51 @@ def predict():
         nombre = request.form.get("nombre", "Jugador").strip()
         posicion = request.form.get("posicion", "").strip()
 
-        preguntas = []
-        for i in range(1, 9):
-            valor = float(request.form.get(f"q{i}", 1))
-            valor = max(1, min(5, valor))
-            preguntas.append(valor)
+        # Las 10 preguntas reales de tu encuesta
+        q12 = float(request.form.get("q12", 3))  # presionado antes partidos
+        q15 = float(request.form.get("q15", 3))  # nervios antes competir
+        q18 = float(request.form.get("q18", 3))  # ansiedad antes partido
+        q30 = float(request.form.get("q30", 3))  # presión entrenador
+        q31 = float(request.form.get("q31", 3))  # presión familia
+        q22 = float(request.form.get("q22", 3))  # frustración
+        q28 = float(request.form.get("q28", 3))  # afecta mal resultado
+        q14 = float(request.form.get("q14", 3))  # confianza rendimiento
+        q17 = float(request.form.get("q17", 3))  # confianza capacidades
+        q24 = float(request.form.get("q24", 3))  # enfocado bajo presión
 
-        puntaje = sum(preguntas)
-        porcentaje = round((puntaje / 40) * 100, 1)
+        # Calcular porcentaje manual
+        preguntas_ansiedad = [q12, q15, q18, q30, q31, q22, q28]
+        preguntas_confianza = [q14, q17, q24]
+        suma_ansiedad = sum(preguntas_ansiedad)
+        suma_confianza = sum(preguntas_confianza)
+        porcentaje = round(((suma_ansiedad / 35) * 70 + ((15 - suma_confianza) / 15) * 30), 1)
+        porcentaje = max(0, min(100, porcentaje))
 
-        if porcentaje < 40:
-            nivel = "BAJO"
-            color = "verde"
-        elif porcentaje < 70:
-            nivel = "MEDIO"
-            color = "amarillo"
+        # Usar modelo si está disponible
+        if modelo:
+            try:
+                features = np.array([[q12, q15, q18, q30, q31, q22, q28, q14, q17, q24]])
+                pred = modelo.predict(features)[0]
+                nivel = pred
+                if nivel == "BAJO":
+                    porcentaje = min(porcentaje, 39)
+                elif nivel == "MEDIO":
+                    porcentaje = max(40, min(porcentaje, 69))
+                else:
+                    porcentaje = max(70, porcentaje)
+            except Exception as e:
+                print("Error modelo:", e)
+                if porcentaje < 40: nivel = "BAJO"
+                elif porcentaje < 70: nivel = "MEDIO"
+                else: nivel = "ALTO"
         else:
-            nivel = "ALTO"
-            color = "rojo"
+            if porcentaje < 40: nivel = "BAJO"
+            elif porcentaje < 70: nivel = "MEDIO"
+            else: nivel = "ALTO"
+
+        if nivel == "BAJO": color = "verde"
+        elif nivel == "MEDIO": color = "amarillo"
+        else: color = "rojo"
 
         recomendacion = obtener_recomendacion(porcentaje)
         guardar_datos(nombre, posicion, porcentaje, nivel)
@@ -107,10 +144,8 @@ def predict():
         print("ERROR:", e)
         return render_template("index.html",
                                resultado="Error",
-                               nivel="",
-                               color="",
-                               nombre="",
-                               posicion="",
+                               nivel="", color="",
+                               nombre="", posicion="",
                                recomendacion=None)
 
 @app.route("/equipo")
@@ -126,18 +161,6 @@ def ver_equipo():
     except Exception as e:
         print("ERROR equipo:", e)
         return render_template("equipo.html", datos=[])
-
-@app.route("/datos_grafico")
-def datos_grafico():
-    try:
-        conn = sqlite3.connect('datos.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT nombre, resultado, nivel FROM jugadores ORDER BY id DESC LIMIT 20")
-        datos = cursor.fetchall()
-        conn.close()
-        return jsonify([{"nombre": d[0], "porcentaje": d[1], "nivel": d[2]} for d in datos])
-    except Exception as e:
-        return jsonify([])
 
 if __name__ == "__main__":
     inicializar_db()
