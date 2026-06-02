@@ -3,6 +3,7 @@ import sqlite3
 import os
 import joblib
 import numpy as np
+import requests as req_http
 
 app = Flask(__name__)
 app.secret_key = "ansiedad2025"
@@ -134,6 +135,12 @@ def predict():
         recomendacion = obtener_recomendacion(porcentaje)
         guardar_datos(nombre, posicion, equipo, porcentaje, nivel)
 
+        conn2 = sqlite3.connect('datos.db')
+        cursor2 = conn2.cursor()
+        cursor2.execute("SELECT last_insert_rowid()")
+        jugador_id = cursor2.fetchone()[0]
+        conn2.close()
+
         return render_template("index.html",
                                resultado=porcentaje,
                                nivel=nivel,
@@ -141,14 +148,16 @@ def predict():
                                nombre=nombre,
                                posicion=posicion,
                                equipo=equipo,
-                               recomendacion=recomendacion)
+                               recomendacion=recomendacion,
+                               jugador_id=jugador_id)
     except Exception as e:
         print("ERROR:", e)
         return render_template("index.html",
                                resultado="Error",
                                nivel="", color="",
                                nombre="", posicion="", equipo="",
-                               recomendacion=None)
+                               recomendacion=None,
+                               jugador_id=None)
 
 # --- LOGIN ADMIN ---
 @app.route("/login", methods=["GET", "POST"])
@@ -202,6 +211,90 @@ def dashboard_equipo(nombre_equipo):
     except Exception as e:
         print("ERROR equipo:", e)
         return render_template("equipo.html", datos=[], nombre_equipo=nombre_equipo)
+
+# --- CHAT IA ---
+@app.route("/chat/<int:jugador_id>")
+def chat(jugador_id):
+    try:
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel FROM jugadores WHERE id=?", (jugador_id,))
+        jugador = cursor.fetchone()
+        conn.close()
+        if not jugador:
+            return redirect(url_for('home'))
+        return render_template("chat.html",
+                               nombre=jugador[0],
+                               posicion=jugador[1],
+                               equipo=jugador[2],
+                               porcentaje=jugador[3],
+                               nivel=jugador[4],
+                               jugador_id=jugador_id)
+    except Exception as e:
+        print("ERROR chat:", e)
+        return redirect(url_for('home'))
+
+@app.route("/chat_mensaje", methods=["POST"])
+def chat_mensaje():
+    try:
+        data = request.get_json()
+        nombre     = data.get("nombre", "Jugador")
+        posicion   = data.get("posicion", "")
+        equipo     = data.get("equipo", "")
+        porcentaje = data.get("porcentaje", 50)
+        nivel      = data.get("nivel", "MEDIO")
+        historial  = data.get("historial", [])
+        mensaje    = data.get("mensaje", "")
+
+        if nivel == "ALTO":
+            variables = "frustración ante errores, ansiedad antes del partido y presión externa (entrenador o familia)"
+        elif nivel == "MEDIO":
+            variables = "nervios antes de competir y cierta presión por el rendimiento"
+        else:
+            variables = "buena autoconfianza y bajo nivel de presión"
+
+        system_prompt = f"""Eres un psicólogo deportivo especializado en fútbol juvenil llamado "Ansi".
+Estás hablando con {nombre}, un jugador de {posicion} del equipo {equipo}.
+Acaba de completar una evaluación de ansiedad precompetitiva y obtuvo un {porcentaje}% — nivel {nivel}.
+Sus factores más relevantes son: {variables}.
+
+Tu rol es:
+- Dar apoyo emocional cálido y empático
+- Usar lenguaje simple, cercano y motivador, apropiado para un joven deportista de 13-17 años
+- Dar tips psicológicos prácticos y concretos (respiración, visualización, rutinas, autodiálogo positivo)
+- NO hacer diagnósticos clínicos ni recomendar medicamentos
+- Mantener las respuestas cortas (máximo 4 oraciones) para que sean fáciles de leer
+- Siempre terminar con una pregunta o invitación a continuar la conversación
+- Si el jugador expresa algo muy serio (autolesión, depresión profunda), recomienda hablar con un adulto de confianza
+Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su terapeuta."""
+
+        mensajes_groq = []
+        for m in historial:
+            mensajes_groq.append({"role": m["role"], "content": m["content"]})
+        mensajes_groq.append({"role": "user", "content": mensaje})
+
+        groq_key = os.environ.get("GROQ_API_KEY", "")
+        response = req_http.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {groq_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "llama3-8b-8192",
+                "messages": [{"role": "system", "content": system_prompt}] + mensajes_groq,
+                "max_tokens": 300,
+                "temperature": 0.7
+            },
+            timeout=15
+        )
+        respuesta = response.json()
+        texto = respuesta["choices"][0]["message"]["content"]
+        return jsonify({"respuesta": texto})
+
+    except Exception as e:
+        print("ERROR chat_mensaje:", e)
+        return jsonify({"respuesta": "Lo siento, tuve un problema. ¿Puedes intentarlo de nuevo?"})
 
 if __name__ == "__main__":
     inicializar_db()
