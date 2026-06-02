@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard General — Ansiedad</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root { --verde: #22c55e; --amarillo: #f59e0b; --rojo: #ef4444; --fondo: #0a0f1a; --card: #111827; --borde: #1f2937; --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  header { background: var(--card); border-bottom: 1px solid var(--borde); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
+  .logo span { color: var(--acento); }
+  .nav-links { display: flex; gap: 10px; flex-wrap: wrap; }
+  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--borde); transition: all 0.2s; }
+  .nav-links a:hover { color: var(--texto); border-color: var(--acento); }
+  .nav-links a.activo { color: var(--texto); border-color: var(--acento); background: rgba(59,130,246,0.1); }
+  main { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.4rem; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  .metricas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+  .metrica-card { background: var(--card); border: 1px solid var(--borde); border-radius: 14px; padding: 1.2rem 1.4rem; }
+  .metrica-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metrica-valor { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; line-height: 1; }
+  .verde { color: var(--verde); } .amarillo { color: var(--amarillo); } .rojo { color: var(--rojo); } .blanco { color: var(--texto); }
+  .seccion-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: var(--muted); margin-bottom: 1rem; margin-top: 2rem; }
+  .equipos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .equipo-card { background: var(--card); border: 1px solid var(--borde); border-radius: 14px; padding: 1.4rem; text-decoration: none; color: var(--texto); transition: all 0.2s; display: flex; flex-direction: column; gap: 10px; }
+  .equipo-card:hover { border-color: var(--acento); transform: translateY(-2px); }
+  .equipo-nombre { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 1px; }
+  .equipo-promedio { font-size: 2rem; font-family: 'Bebas Neue', sans-serif; }
+  .equipo-meta { font-size: 0.82rem; color: var(--muted); }
+  .barra-mini { height: 6px; border-radius: 999px; background: var(--borde); overflow: hidden; margin-top: 4px; }
+  .barra-mini-relleno { height: 100%; border-radius: 999px; }
+  .grafico-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+  .grafico-contenedor { position: relative; height: 280px; }
+  .tabla-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
+  .tabla-header-row { padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  thead th { text-align: left; padding: 10px 16px; font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--borde); }
+  tbody tr { border-bottom: 1px solid var(--borde); transition: background 0.15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td { padding: 11px 16px; font-size: 0.88rem; }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  .badge.BAJO { background: rgba(34,197,94,0.15); color: var(--verde); }
+  .badge.MEDIO { background: rgba(245,158,11,0.15); color: var(--amarillo); }
+  .badge.ALTO { background: rgba(239,68,68,0.15); color: var(--rojo); }
+  .vacio { text-align: center; padding: 3rem; color: var(--muted); }
+  @media (max-width: 700px) { .metricas { grid-template-columns: 1fr 1fr; } .page-title { font-size: 2rem; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚽ <span>ANSIO</span>METER</div>
+  <div class="nav-links">
+    <a href="/dashboard" class="activo">General</a>
+    {% for eq in por_equipo %}
+    <a href="/equipo/{{ eq[0] }}">{{ eq[0] }}</a>
+    {% endfor %}
+    <a href="/logout">Salir</a>
+  </div>
+</header>
+<main>
+  <h1 class="page-title">Dashboard<br>General</h1>
+  <p class="page-sub">Visión global de todos los equipos evaluados</p>
+
+  {% if todos %}
+    {% set total = todos|length %}
+    {% set promedio_gen = (todos|map(attribute=3)|list|sum / total)|round(1) %}
+    {% set bajos = todos|selectattr(4, 'equalto', 'BAJO')|list|length %}
+    {% set medios = todos|selectattr(4, 'equalto', 'MEDIO')|list|length %}
+    {% set altos = todos|selectattr(4, 'equalto', 'ALTO')|list|length %}
+
+    <div class="metricas">
+      <div class="metrica-card">
+        <div class="metrica-label">Total jugadores</div>
+        <div class="metrica-valor blanco">{{ total }}</div>
+      </div>
+      <div class="metrica-card">
+        <div class="metrica-label">Promedio general</div>
+        <div class="metrica-valor {% if promedio_gen < 40 %}verde{% elif promedio_gen < 70 %}amarillo{% else %}rojo{% endif %}">{{ promedio_gen }}%</div>
+      </div>
+      <div class="metrica-card">
+        <div class="metrica-label">Ansiedad baja 🟢</div>
+        <div class="metrica-valor verde">{{ bajos }}</div>
+      </div>
+      <div class="metrica-card">
+        <div class="metrica-label">Ansiedad alta 🔴</div>
+        <div class="metrica-valor rojo">{{ altos }}</div>
+      </div>
+    </div>
+
+    <p class="seccion-titulo">Comparativo por equipo</p>
+    <div class="equipos-grid">
+      {% for eq in por_equipo %}
+      {% set prom = eq[1]|round(1) %}
+      <a href="/equipo/{{ eq[0] }}" class="equipo-card">
+        <div class="equipo-nombre">{{ eq[0] }}</div>
+        <div class="equipo-promedio {% if prom < 40 %}verde{% elif prom < 70 %}amarillo{% else %}rojo{% endif %}">{{ prom }}%</div>
+        <div class="equipo-meta">{{ eq[2] }} jugadores evaluados</div>
+        <div class="barra-mini">
+          <div class="barra-mini-relleno {% if prom < 40 %}verde{% elif prom < 70 %}amarillo{% else %}rojo{% endif %}" style="width:{{ prom }}%; background: {% if prom < 40 %}#22c55e{% elif prom < 70 %}#f59e0b{% else %}#ef4444{% endif %}"></div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <div class="grafico-card">
+      <div class="seccion-titulo" style="margin-top:0">Promedio de ansiedad por equipo</div>
+      <div class="grafico-contenedor">
+        <canvas id="graficoPorEquipo"></canvas>
+      </div>
+    </div>
+
+    <div class="tabla-card">
+      <div class="tabla-header-row">Todos los registros</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th><th>Equipo</th><th>Posición</th><th>Ansiedad</th><th>Nivel</th><th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for j in todos %}
+          <tr>
+            <td><strong>{{ j[0] }}</strong></td>
+            <td style="color:var(--acento)">{{ j[2] }}</td>
+            <td style="color:var(--muted)">{{ j[1] or '—' }}</td>
+            <td>{{ j[3] }}%</td>
+            <td><span class="badge {{ j[4] }}">{{ j[4] }}</span></td>
+            <td style="color:var(--muted);font-size:0.8rem">{{ j[5][:10] if j[5] else '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      const equipos = {{ por_equipo|map(attribute=0)|list|tojson }};
+      const promedios = {{ por_equipo|map(attribute=1)|list|tojson }};
+      const colores = promedios.map(p => p < 40 ? 'rgba(34,197,94,0.8)' : p < 70 ? 'rgba(245,158,11,0.8)' : 'rgba(239,68,68,0.8)');
+      new Chart(document.getElementById('graficoPorEquipo').getContext('2d'), {
+        type: 'bar',
+        data: { labels: equipos, datasets: [{ label: 'Promedio ansiedad (%)', data: promedios, backgroundColor: colores, borderRadius: 8, borderSkipped: false }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#6b7280', font: { family: 'DM Sans', size: 13 } }, grid: { color: '#1f2937' } },
+            y: { min: 0, max: 100, ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1f2937' } }
+          }
+        }
+      });
+    </script>
+
+  {% else %}
+    <div class="vacio"><p>Aún no hay datos registrados.</p><a href="/" style="color:var(--acento);margin-top:8px;display:block">Ir al formulario →</a></div>
+  {% endif %}
+</main>
+</body>
+</html>
