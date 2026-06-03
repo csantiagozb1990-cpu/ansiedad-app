@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ nombre_equipo }} — Dashboard</title>
+<title>Dashboard del Equipo — Ansiedad</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
@@ -13,58 +13,77 @@
   header { background: var(--card); border-bottom: 1px solid var(--borde); padding: 1rem 2rem; display: flex; align-items: center; justify-content: space-between; }
   .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 2px; display: flex; align-items: center; gap: 10px; }
   .logo span { color: var(--acento); }
-  .nav-links { display: flex; gap: 10px; }
-  .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--borde); transition: all 0.2s; }
-  .nav-links a:hover { color: var(--texto); border-color: var(--acento); }
-  main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+  .header-nav { display: flex; align-items: center; gap: 10px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 6px 16px; border-radius: 8px; border: 1px solid var(--borde); transition: all 0.2s; }
+  nav a:hover { color: var(--texto); border-color: var(--acento); }
+  main { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.5rem; }
   .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.4rem; }
   .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
   .metricas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
   .metrica-card { background: var(--card); border: 1px solid var(--borde); border-radius: 14px; padding: 1.2rem 1.4rem; }
-  .metrica-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-  .metrica-valor { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 1px; line-height: 1; }
-  .verde { color: var(--verde); } .amarillo { color: var(--amarillo); } .rojo { color: var(--rojo); } .blanco { color: var(--texto); }
+  .metrica-label { font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .metrica-valor { font-family: 'Bebas Neue', sans-serif; font-size: 2.2rem; letter-spacing: 1px; line-height: 1; }
+  .metrica-valor.verde { color: var(--verde); }
+  .metrica-valor.amarillo { color: var(--amarillo); }
+  .metrica-valor.rojo { color: var(--rojo); }
+  .metrica-valor.blanco { color: var(--texto); }
   .grafico-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
-  .grafico-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 1px; color: var(--muted); margin-bottom: 1rem; }
-  .grafico-contenedor { position: relative; height: 280px; }
-  .tabla-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; }
-  .tabla-header-row { padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1px; color: var(--muted); }
+  .grafico-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: var(--muted); margin-bottom: 1.2rem; }
+  .grafico-contenedor { position: relative; height: 300px; }
+  .tabla-card { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
+  .tabla-header-row { padding: 1rem 1.5rem; border-bottom: 1px solid var(--borde); display: flex; align-items: center; justify-content: space-between; }
+  .tabla-header-row h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 1px; color: var(--muted); }
   table { width: 100%; border-collapse: collapse; }
-  thead th { text-align: left; padding: 10px 16px; font-size: 0.75rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--borde); }
+  thead th { text-align: left; padding: 10px 16px; font-size: 0.78rem; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--borde); background: rgba(255,255,255,0.02); }
   tbody tr { border-bottom: 1px solid var(--borde); transition: background 0.15s; }
   tbody tr:last-child { border-bottom: none; }
   tbody tr:hover { background: rgba(255,255,255,0.03); }
-  tbody td { padding: 11px 16px; font-size: 0.88rem; }
-  .badge { display: inline-flex; padding: 3px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+  tbody td { padding: 12px 16px; font-size: 0.9rem; color: var(--texto); }
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; }
   .badge.BAJO { background: rgba(34,197,94,0.15); color: var(--verde); }
   .badge.MEDIO { background: rgba(245,158,11,0.15); color: var(--amarillo); }
   .badge.ALTO { background: rgba(239,68,68,0.15); color: var(--rojo); }
-  .barra-mini { height: 6px; border-radius: 999px; background: var(--borde); width: 90px; overflow: hidden; }
+  .barra-mini { height: 6px; border-radius: 999px; background: var(--borde); width: 80px; overflow: hidden; display: inline-block; vertical-align: middle; margin-left: 8px; }
   .barra-mini-relleno { height: 100%; border-radius: 999px; }
   .barra-mini-relleno.BAJO { background: var(--verde); }
   .barra-mini-relleno.MEDIO { background: var(--amarillo); }
   .barra-mini-relleno.ALTO { background: var(--rojo); }
+  .vacio { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.95rem; }
+  .btn-borrar { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 8px 16px; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .btn-borrar:hover { background: rgba(239,68,68,0.2); border-color: var(--rojo); color: #fff; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--borde); border-radius: 16px; padding: 2rem; max-width: 400px; width: 90%; text-align: center; }
+  .modal h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 0.8rem; color: var(--rojo); }
+  .modal p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.6; }
+  .modal-btns { display: flex; gap: 10px; justify-content: center; }
+  .btn-cancelar { background: var(--borde); border: none; color: var(--texto); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; transition: all 0.2s; }
+  .btn-cancelar:hover { background: #374151; }
+  .btn-confirmar { background: var(--rojo); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; transition: all 0.2s; }
+  .btn-confirmar:hover { background: #dc2626; }
   @media (max-width: 600px) { .metricas { grid-template-columns: 1fr; } .page-title { font-size: 2rem; } }
 </style>
 </head>
 <body>
+
 <header>
   <div class="logo">⚽ <span>ANSIO</span>METER</div>
-  <div class="nav-links">
-    <a href="/dashboard">← General</a>
-    <a href="/logout">Salir</a>
+  <div class="header-nav">
+    <nav><a href="/">← Evaluar jugador</a></nav>
+    <nav><a href="/logout">Cerrar sesión</a></nav>
   </div>
 </header>
+
 <main>
-  <h1 class="page-title">{{ nombre_equipo }}</h1>
-  <p class="page-sub">Dashboard de ansiedad precompetitiva del equipo</p>
+  <h1 class="page-title">Dashboard<br>del Equipo</h1>
+  <p class="page-sub">Resumen de ansiedad precompetitiva del grupo</p>
 
   {% if datos %}
     {% set total = datos|length %}
-    {% set promedio = (datos|map(attribute=2)|list|sum / total)|round(1) %}
-    {% set bajos = datos|selectattr(3, 'equalto', 'BAJO')|list|length %}
-    {% set medios = datos|selectattr(3, 'equalto', 'MEDIO')|list|length %}
-    {% set altos = datos|selectattr(3, 'equalto', 'ALTO')|list|length %}
+    {% set promedio = (datos|map(attribute=3)|list|sum / total)|round(1) %}
+    {% set bajos = datos|selectattr(4, 'equalto', 'BAJO')|list|length %}
+    {% set medios = datos|selectattr(4, 'equalto', 'MEDIO')|list|length %}
+    {% set altos = datos|selectattr(4, 'equalto', 'ALTO')|list|length %}
 
     <div class="metricas">
       <div class="metrica-card">
@@ -85,27 +104,45 @@
 
     <div class="grafico-card">
       <div class="grafico-titulo">Ansiedad por jugador (%)</div>
-      <div class="grafico-contenedor"><canvas id="grafico"></canvas></div>
+      <div class="grafico-contenedor">
+        <canvas id="grafico"></canvas>
+      </div>
     </div>
 
     <div class="tabla-card">
-      <div class="tabla-header-row">Jugadores — {{ nombre_equipo }}</div>
+      <div class="tabla-header-row">
+        <h3>Historial de jugadores</h3>
+        <button class="btn-borrar" onclick="document.getElementById('modalBorrar').classList.add('active')">
+          🗑️ Borrar todos los datos
+        </button>
+      </div>
       <table>
-        <thead><tr><th>#</th><th>Nombre</th><th>Posición</th><th>Ansiedad</th><th>Nivel</th><th>Fecha</th></tr></thead>
-        <tbody>
-          {% for j in datos %}
+        <thead>
           <tr>
-            <td style="color:var(--muted)">{{ loop.index }}</td>
-            <td><strong>{{ j[0] }}</strong></td>
-            <td style="color:var(--muted)">{{ j[1] or '—' }}</td>
+            <th>#</th>
+            <th>Nombre</th>
+            <th>Posición</th>
+            <th>Equipo</th>
+            <th>Ansiedad</th>
+            <th>Nivel</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for jugador in datos %}
+          <tr>
+            <td style="color: var(--muted);">{{ loop.index }}</td>
+            <td><strong>{{ jugador[0] }}</strong></td>
+            <td style="color: var(--muted);">{{ jugador[1] or '—' }}</td>
+            <td style="color: var(--muted);">{{ jugador[2] or '—' }}</td>
             <td>
-              <div style="display:flex;align-items:center;gap:8px">
-                <span>{{ j[2] }}%</span>
-                <div class="barra-mini"><div class="barra-mini-relleno {{ j[3] }}" style="width:{{ j[2] }}%"></div></div>
+              {{ jugador[3] }}%
+              <div class="barra-mini">
+                <div class="barra-mini-relleno {{ jugador[4] }}" style="width: {{ jugador[3] }}%"></div>
               </div>
             </td>
-            <td><span class="badge {{ j[3] }}">{{ j[3] }}</span></td>
-            <td style="color:var(--muted);font-size:0.8rem">{{ j[4][:10] if j[4] else '—' }}</td>
+            <td><span class="badge {{ jugador[4] }}">{{ jugador[4] }}</span></td>
+            <td style="color: var(--muted); font-size: 0.82rem;">{{ jugador[5][:10] if jugador[5] else '—' }}</td>
           </tr>
           {% endfor %}
         </tbody>
@@ -114,25 +151,57 @@
 
     <script>
       const nombres = {{ datos|map(attribute=0)|list|tojson }};
-      const valores = {{ datos|map(attribute=2)|list|tojson }};
-      const niveles = {{ datos|map(attribute=3)|list|tojson }};
-      const colores = niveles.map(n => n==='BAJO'?'rgba(34,197,94,0.8)':n==='MEDIO'?'rgba(245,158,11,0.8)':'rgba(239,68,68,0.8)');
-      new Chart(document.getElementById('grafico').getContext('2d'), {
+      const valores = {{ datos|map(attribute=3)|list|tojson }};
+      const niveles = {{ datos|map(attribute=4)|list|tojson }};
+      const colores = niveles.map(n => {
+        if (n === 'BAJO') return 'rgba(34,197,94,0.8)';
+        if (n === 'MEDIO') return 'rgba(245,158,11,0.8)';
+        return 'rgba(239,68,68,0.8)';
+      });
+      const ctx = document.getElementById('grafico').getContext('2d');
+      new Chart(ctx, {
         type: 'bar',
-        data: { labels: nombres, datasets: [{ label: 'Ansiedad (%)', data: valores, backgroundColor: colores, borderRadius: 6, borderSkipped: false }] },
+        data: {
+          labels: nombres,
+          datasets: [{ label: 'Ansiedad (%)', data: valores, backgroundColor: colores, borderRadius: 6, borderSkipped: false }]
+        },
         options: {
           responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}% — ${niveles[ctx.dataIndex]}` } } },
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.parsed.y}% — ${niveles[ctx.dataIndex]}` } }
+          },
           scales: {
             x: { ticks: { color: '#6b7280', font: { family: 'DM Sans', size: 12 } }, grid: { color: '#1f2937' } },
-            y: { min: 0, max: 100, ticks: { color: '#6b7280', callback: v => v + '%' }, grid: { color: '#1f2937' } }
+            y: { min: 0, max: 100, ticks: { color: '#6b7280', callback: v => v + '%', font: { family: 'DM Sans', size: 12 } }, grid: { color: '#1f2937' } }
           }
         }
       });
     </script>
+
   {% else %}
-    <div style="text-align:center;padding:3rem;color:var(--muted)">No hay jugadores evaluados en este equipo aún.</div>
+    <div class="tabla-card">
+      <div class="vacio">
+        <p>Aún no hay jugadores evaluados.</p>
+        <p style="margin-top: 8px;"><a href="/" style="color: var(--acento);">Ir a evaluar →</a></p>
+      </div>
+    </div>
   {% endif %}
 </main>
+
+<!-- Modal de confirmación -->
+<div class="modal-overlay" id="modalBorrar">
+  <div class="modal">
+    <h3>⚠️ Borrar todos los datos</h3>
+    <p>Esto eliminará permanentemente todos los registros de jugadores. Esta acción no se puede deshacer.</p>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="document.getElementById('modalBorrar').classList.remove('active')">Cancelar</button>
+      <form action="/borrar_datos" method="POST" style="display:inline;">
+        <button type="submit" class="btn-confirmar">Sí, borrar todo</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
