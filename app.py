@@ -37,16 +37,6 @@ def inicializar_db():
     conn.commit()
     conn.close()
 
-def guardar_datos(nombre, posicion, equipo, resultado, nivel):
-    conn = sqlite3.connect('datos.db')
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO jugadores (nombre, posicion, equipo, resultado, nivel) VALUES (?, ?, ?, ?, ?)",
-        (nombre, posicion, equipo, resultado, nivel)
-    )
-    conn.commit()
-    conn.close()
-
 def obtener_recomendacion(porcentaje):
     if porcentaje < 40:
         return {
@@ -118,13 +108,19 @@ def predict():
         else: color = "rojo"
 
         recomendacion = obtener_recomendacion(porcentaje)
-        guardar_datos(nombre, posicion, equipo, porcentaje, nivel)
 
-        conn2 = sqlite3.connect('datos.db')
-        cursor2 = conn2.cursor()
-        cursor2.execute("SELECT last_insert_rowid()")
-        jugador_id = cursor2.fetchone()[0]
-        conn2.close()
+        # Guardar y obtener ID en la misma conexión
+        conn_save = sqlite3.connect('datos.db')
+        cursor_save = conn_save.cursor()
+        cursor_save.execute(
+            "INSERT INTO jugadores (nombre, posicion, equipo, resultado, nivel) VALUES (?, ?, ?, ?, ?)",
+            (nombre, posicion, equipo, porcentaje, nivel)
+        )
+        jugador_id = cursor_save.lastrowid
+        conn_save.commit()
+        conn_save.close()
+
+        print(f"Jugador guardado con ID: {jugador_id}")
 
         return render_template("index.html",
                                resultado=porcentaje,
@@ -136,7 +132,7 @@ def predict():
                                recomendacion=recomendacion,
                                jugador_id=jugador_id)
     except Exception as e:
-        print("ERROR:", e)
+        print("ERROR predict:", e)
         return render_template("index.html",
                                resultado=None, nivel=None, color=None,
                                nombre=None, posicion=None, equipo=None,
@@ -182,7 +178,9 @@ def chat(jugador_id):
         cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel FROM jugadores WHERE id=?", (jugador_id,))
         jugador = cursor.fetchone()
         conn.close()
+        print(f"Buscando jugador ID {jugador_id}: {jugador}")
         if not jugador:
+            print(f"No se encontró jugador con ID {jugador_id}, redirigiendo a home")
             return redirect(url_for('home'))
         return render_template("chat.html",
                                nombre=jugador[0],
