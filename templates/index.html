@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ansiedad Precompetitiva — Fútbol</title>
+<title>Punto de Calma — Fútbol</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root { --verde: #22c55e; --amarillo: #f59e0b; --rojo: #ef4444; --fondo: #0a0f1a; --card: #111827; --borde: #1f2937; --texto: #f9fafb; --muted: #6b7280; --acento: #3b82f6; }
@@ -16,7 +16,17 @@
   nav a:hover { color: var(--texto); border-color: var(--acento); }
   main { max-width: 720px; margin: 0 auto; padding: 2.5rem 1.5rem; }
   .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 3px; line-height: 1; margin-bottom: 0.4rem; }
-  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 2.5rem; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+
+  /* MENSAJE MOTIVADOR */
+  .mensaje-motivador { background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08)); border: 1px solid rgba(139,92,246,0.2); border-radius: 16px; padding: 1.5rem 1.8rem; margin-bottom: 2rem; }
+  .mensaje-motivador .icono { font-size: 2rem; margin-bottom: 0.8rem; }
+  .mensaje-motivador h3 { font-size: 1.05rem; font-weight: 600; color: #c4b5fd; margin-bottom: 0.6rem; }
+  .mensaje-motivador p { font-size: 0.92rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+  .cita { border-left: 3px solid rgba(139,92,246,0.5); padding-left: 1rem; margin-top: 0.8rem; }
+  .cita p { font-size: 0.88rem; color: #a78bfa; font-style: italic; line-height: 1.6; margin-bottom: 0.3rem; }
+  .cita span { font-size: 0.78rem; color: var(--muted); font-style: normal; }
+
   .resultado-card { border-radius: 16px; padding: 2rem; margin-bottom: 2rem; border: 1px solid var(--borde); background: var(--card); animation: fadeIn 0.5s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
   .resultado-header { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
@@ -68,12 +78,35 @@
 </head>
 <body>
 <header>
-  <div class="logo">⚽ <span>ANSIO</span>METER</div>
+  <div class="logo">🧘 <span>PUNTO</span> DE CALMA</div>
   <nav><a href="/login">Admin →</a></nav>
 </header>
 <main>
   <h1 class="page-title">Control de Ansiedad<br>Precompetitiva</h1>
   <p class="page-sub">Evalúa tu estado antes del partido — responde con honestidad</p>
+
+  <!-- MENSAJE MOTIVADOR -->
+  <div class="mensaje-motivador">
+    <div class="icono">🌱</div>
+    <h3>La ansiedad no es tu enemiga — es tu energía</h3>
+    <p>
+      Sentir nervios antes de un partido es completamente normal. Tu cuerpo se está preparando para dar lo mejor de ti. 
+      La ansiedad precompetitiva es una respuesta natural que, bien manejada, puede mejorar tu concentración, 
+      tu velocidad de reacción y tu rendimiento en el campo.
+    </p>
+    <p>
+      Los grandes deportistas no son aquellos que no sienten miedo o presión — son quienes han aprendido 
+      a reconocer esas emociones y usarlas a su favor. Tú también puedes aprender a hacerlo.
+    </p>
+    <div class="cita">
+      <p>"La ansiedad es el vértigo de la libertad — la posibilidad de elegir cómo responder ante lo que sentimos."</p>
+      <span>— Søren Kierkegaard, filósofo y pionero del pensamiento sobre la ansiedad humana</span>
+    </div>
+    <div class="cita" style="margin-top: 0.8rem;">
+      <p>"No son las circunstancias las que nos afectan, sino la interpretación que hacemos de ellas."</p>
+      <span>— Epicteto, filósofo estoico — base del enfoque cognitivo moderno en psicología deportiva</span>
+    </div>
+  </div>
 
   {% if resultado is not none and resultado != 'Error' %}
   <div class="resultado-card {{ color }}">
