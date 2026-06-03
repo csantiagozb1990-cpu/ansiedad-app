@@ -119,8 +119,6 @@ def predict():
         conn_save.commit()
         conn_save.close()
 
-        print(f"Jugador guardado con ID: {jugador_id}")
-
         return render_template("index.html",
                                resultado=porcentaje,
                                nivel=nivel,
@@ -168,6 +166,40 @@ def ver_equipo():
         print("ERROR equipo:", e)
         return render_template("equipo.html", datos=[])
 
+@app.route("/dashboard")
+def dashboard():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+    try:
+        inicializar_db()
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel, fecha FROM jugadores ORDER BY fecha DESC")
+        todos = cursor.fetchall()
+        cursor.execute("SELECT equipo, AVG(resultado), COUNT(*) FROM jugadores GROUP BY equipo")
+        por_equipo = cursor.fetchall()
+        conn.close()
+        return render_template("equipo.html", datos=todos, por_equipo=por_equipo)
+    except Exception as e:
+        print("ERROR dashboard:", e)
+        return render_template("equipo.html", datos=[], por_equipo=[])
+
+@app.route("/borrar_datos", methods=["POST"])
+def borrar_datos():
+    if not session.get("admin"):
+        return redirect(url_for("login"))
+    try:
+        conn = sqlite3.connect('datos.db')
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM jugadores")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='jugadores'")
+        conn.commit()
+        conn.close()
+        return redirect(url_for("ver_equipo"))
+    except Exception as e:
+        print("ERROR borrar:", e)
+        return redirect(url_for("ver_equipo"))
+
 @app.route("/chat/<int:jugador_id>")
 def chat(jugador_id):
     try:
@@ -177,7 +209,6 @@ def chat(jugador_id):
         cursor.execute("SELECT nombre, posicion, equipo, resultado, nivel FROM jugadores WHERE id=?", (jugador_id,))
         jugador = cursor.fetchone()
         conn.close()
-        print(f"Buscando jugador ID {jugador_id}: {jugador}")
         if not jugador:
             return redirect(url_for('home'))
         return render_template("chat.html",
@@ -228,8 +259,6 @@ Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su te
         mensajes_groq.append({"role": "user", "content": mensaje})
 
         groq_key = os.environ.get("GROQ_API_KEY", "")
-        print(f"Usando modelo: llama-3.1-8b-instant, key presente: {bool(groq_key)}")
-
         response = req_http.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
@@ -241,8 +270,6 @@ Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su te
             },
             timeout=15
         )
-        print(f"Respuesta Groq status: {response.status_code}")
-        print(f"Respuesta Groq body: {response.text[:200]}")
         texto = response.json()["choices"][0]["message"]["content"]
         return jsonify({"respuesta": texto})
     except Exception as e:
