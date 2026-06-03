@@ -109,7 +109,6 @@ def predict():
 
         recomendacion = obtener_recomendacion(porcentaje)
 
-        # Guardar y obtener ID en la misma conexión
         conn_save = sqlite3.connect('datos.db')
         cursor_save = conn_save.cursor()
         cursor_save.execute(
@@ -180,7 +179,6 @@ def chat(jugador_id):
         conn.close()
         print(f"Buscando jugador ID {jugador_id}: {jugador}")
         if not jugador:
-            print(f"No se encontró jugador con ID {jugador_id}, redirigiendo a home")
             return redirect(url_for('home'))
         return render_template("chat.html",
                                nombre=jugador[0],
@@ -230,17 +228,21 @@ Recuerda siempre su nombre y contexto en cada respuesta. Sé su aliado, no su te
         mensajes_groq.append({"role": "user", "content": mensaje})
 
         groq_key = os.environ.get("GROQ_API_KEY", "")
+        print(f"Usando modelo: llama-3.1-8b-instant, key presente: {bool(groq_key)}")
+
         response = req_http.post(
             "https://api.groq.com/openai/v1/chat/completions",
             headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
             json={
-                "model": "llama3-8b-8192",
+                "model": "llama-3.1-8b-instant",
                 "messages": [{"role": "system", "content": system_prompt}] + mensajes_groq,
                 "max_tokens": 300,
                 "temperature": 0.7
             },
             timeout=15
         )
+        print(f"Respuesta Groq status: {response.status_code}")
+        print(f"Respuesta Groq body: {response.text[:200]}")
         texto = response.json()["choices"][0]["message"]["content"]
         return jsonify({"respuesta": texto})
     except Exception as e:
